@@ -1,14 +1,23 @@
 from src.game import Connect4
 from src.agents.q_learning import QLearningAgent
 from src.agents.randomAgent import RandomAgent
+from src.agents.heuristicAgent import HeuristicAgent
+
 import tqdm
 
 SAVE_PATH = "../assets/q_table.pkl"
 
 
-def train_q_agent(episodes=1_000_000):
-    agent = QLearningAgent(player_id=1)
-    opponent = RandomAgent(player_id=2)
+def train_q_agent(episodes=10_000_000):
+    agent = QLearningAgent(
+        player_id=1,
+        alpha=0.4,
+        gamma=0.95,           # greedy con recompensas mas cercanas
+        epsilon=1.0,          # empieza explorando
+        epsilon_decay=0.9992,
+        epsilon_min=0.05
+    )
+    opponent = HeuristicAgent (player_id=2)
 
     for _ in tqdm.tqdm(range(episodes)):
         game = Connect4()
@@ -28,7 +37,7 @@ def train_q_agent(episodes=1_000_000):
                 elif game.is_draw():
                     reward = 0.5
                 else:
-                    reward = 0
+                    reward = -0.01
 
                 done = game.winner is not None or game.is_draw()
                 agent.update(state, action, reward, next_state, done)
