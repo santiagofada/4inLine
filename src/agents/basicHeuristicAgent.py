@@ -2,7 +2,7 @@ from src.agents.base import Agent
 import random
 import copy
 
-class HeuristicAgent(Agent):
+class BasicHeuristicAgent(Agent):
     def select_action(self, game):
         opponent_id = 3 - self.player_id
 

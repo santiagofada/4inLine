@@ -1,8 +1,8 @@
 from src.game import Connect4
 from src.agents.humanAgent import HumanAgent
 from src.agents.randomAgent import RandomAgent
-from src.agents.heuristicAgent import HeuristicAgent
-from src.agents.q_learning import QLearningAgent
+from src.agents.basicHeuristicAgent import HeuristicAgent
+from src.agents.QLearning import QLearningAgent
 
 import sys
 import time
@@ -19,9 +19,12 @@ def print_board(board):
 def play_game():
     game = Connect4()
     player1 = HumanAgent(player_id=1)
+    #player1 = QLearningAgent(player_id=2)
+    #player1.load("../assets/q_table.pkl")
+
     #player2 = HeuristicAgent(player_id=2)
     player2 = QLearningAgent(player_id=2)
-    player2.load("../assets/q_table.pkl")
+    player2.load("../assets/q_agent_dual_5.pkl")
 
     print("Bienvenido a 4 en línea! Tú eres el Jugador 1 (X)", flush=True)
     print_board(game.board)
