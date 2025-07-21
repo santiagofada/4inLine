@@ -1,64 +1,106 @@
 # 4-en-Línea — Algoritmos para la Toma de Decisiones
 
-> Trabajo Final para la materia **Algoritmos para la Toma de Decisiones** – FaMAF
+> Trabajo Final — **Algoritmos para la Toma de Decisiones**  
+> Facultad de Matemática, Astronomía, Física y Computación (FaMAF)
 
-Este repositorio implementa el clásico juego **Connect-4** (4-en-línea) junto con varios agentes de decisión basados en búsqueda, heurísticas y **aprendizaje por refuerzo**. Se puede ejecutar en consola o mediante una interfaz gráfica en **Tkinter**.
+Este proyecto implementa el clásico juego **4-en-Línea** (*Connect-4*) con distintos tipos de agentes inteligentes. Se exploran enfoques de **búsqueda adversarial** y **aprendizaje por refuerzo**, integrados en una interfaz gráfica interactiva desarrollada con **Tkinter**.
 
 ---
 
-## Tabla de Contenidos
+## Contenidos
+
 1. [Contexto Académico](#contexto-académico)
 2. [Fundamentos Teóricos](#fundamentos-teóricos)
 3. [Estructura del Proyecto](#estructura-del-proyecto)
+4. [Cómo Ejecutar](#cómo-ejecutar)
+5. [Resultados y Presentación](#resultados-y-presentación)
 
 ---
 
 ## Contexto Académico
-Este proyecto cubre gran parte del programa de la materia (ver [`Algoritmos para la Toma de Decisiones.pdf`](./Algoritmos%20para%20la%20Toma%20de%20Decisiones.pdf)):
 
-| Tema                                   | Implementación en el proyecto                                    |
-|----------------------------------------|------------------------------------------------------------------|
-| Representación de espacios de estado   | Clase [Connect4](cci:2://file:///Users/sfada/PycharmProjects/4inLine-master/src/game.py:4:0-47:72) en [src/game.py](cci:7://file:///Users/sfada/PycharmProjects/4inLine-master/src/game.py:0:0-0:0)                                |
-| Búsqueda adversarial (Minimax)         | [MinimaxAgent](cci:2://file:///Users/sfada/PycharmProjects/4inLine-master/src/agents/minimaxAgent.py:28:0-172:19) con poda α–β y tabla de transposición             |
-| Heurísticas de evaluación              | [BasicHeuristicAgent](cci:2://file:///Users/sfada/PycharmProjects/4inLine-master/src/agents/basicHeuristicAgent.py:4:0-30:54) y [AdvancedHeuristicAgent](cci:2://file:///Users/sfada/PycharmProjects/4inLine-master/src/agents/advancedHeuristicAgent.py:4:0-58:29)                 |
-| Modelos de Markov (MDP)                | Implícitos en las transiciones del juego                         |
-| Aprendizaje por refuerzo (Q-Learning)  | [QLearningAgent](cci:2://file:///Users/sfada/PycharmProjects/4inLine-master/src/agents/qLearningAgent.py:14:0-109:19) + entrenamiento *self-play*                     |
+Este proyecto resume gran parte del contenido de la materia, aplicando conceptos clave sobre agentes, decisiones secuenciales y aprendizaje:
 
-Las diapositivas [[2025_TDJ_Presentation.pdf](cci:7://file:///Users/sfada/PycharmProjects/4inLine-master/2025_TDJ_Presentation.pdf:0:0-0:0)](./2025_TDJ_Presentation.pdf) se usarán en la exposición para mostrar resultados y análisis.
+| Tema                                   | Implementación                                               |
+|----------------------------------------|--------------------------------------------------------------|
+| Espacios de estado y acciones          | Clase `Connect4` en [`src/game.py`](./src/game.py)           |
+| Búsqueda adversarial (Minimax)         | `MinimaxAgent` con poda α–β y tabla de transposición         |
+| Heurísticas de evaluación              | `BasicHeuristicAgent` y `AdvancedHeuristicAgent`             |
+| Modelos de Markov (MDP)                | Implícitos en la dinámica de Q-Learning                      |
+| Aprendizaje por refuerzo (Q-Learning)  | `QLearningAgent` con entrenamiento vía *self-play*           |
 
+Además, se acompaña con [diapositivas de exposición](./2025_TDJ_Presentation.pdf) con visualizaciones, ejemplos y análisis del rendimiento de los agentes.
 
 ---
 
 ## Fundamentos Teóricos
 
-### Minimax: Búsqueda Adversarial
-Minimax modela *4-en-línea* como un **juego de suma-cero**.  MAX (nuestro agente) busca maximizar la utilidad mientras que MIN (el oponente) la minimiza.
+### Búsqueda Adversarial: Minimax
 
-* Paso de decisión: se genera el **árbol de juego** hasta una profundidad `d` (`depth` en `MinimaxAgent`).
-* **Función heurística**: cuando se alcanza la profundidad límite o un nodo terminal, se evalúa el tablero asignando puntajes a alineaciones de 2-3-4 fichas, priorizando la columna central.
-* **Poda α–β** reduce nodos explorados descartando ramas donde `α ≥ β`.
-* **Tabla de transposición**: se almacena la mejor acción/valor para tableros ya evaluados, evitando recomputar subárboles repetidos.
-* Complejidad sin poda: *O(b^d)* (b≈7).  Con poda y ordenamiento heurístico suele rondar *O(b^{d/2})*.
+El algoritmo Minimax se basa en modelar el juego como un problema de decisión secuencial, determinista y de suma cero:
 
-En esta implementación la política resultante es determinista y *óptima* respecto a la profundidad analizada.
+- **Árbol de juego**: se expande recursivamente hasta cierta profundidad `d`.
+- **Función de evaluación**: mide cuán favorable es un estado intermedio (alineaciones, posición central, amenazas).
+- **Poda α–β**: evita explorar ramas irrelevantes mejorando la eficiencia.
+- **Tabla de transposición**: cachea resultados para estados previamente evaluados.
 
-### Q-Learning: Aprendizaje por Refuerzo
-Q-Learning es un algoritmo **off-policy, model-free** que aprende la función de acción-valor `Q(s,a)` resolviendo un **Proceso de Decisión de Markov (MDP)** mediante iteración temporal-difusa.
+> El agente resultante es determinista y puede jugar casi perfectamente en niveles intermedios de profundidad.
 
-Actualización principal:
+### Aprendizaje por Refuerzo: Q-Learning
+
+Q-Learning aprende directamente a partir de la experiencia sin necesidad de modelar el entorno (es **model-free**):
+
 ```python
-Q[s, a] += alpha * (r + gamma * max_a_prime Q[s_prime, a_prime] - Q[s, a])
+Q(s, a) ← Q(s, a) + α · (r + γ · max  [Q(s , a´) − Q(s, a)]) #para todo a´ en el conjunto de estados A
 ```
-Dónde:
-* `alpha (α)` – tasa de aprendizaje.
-* `gamma (γ)` – descuento de recompensas futuras.
-* `r` – recompensa inmediata (+1 ganar, −1 perder, 0 en curso).
+donde:
 
-Características de la versión implementada:
-* **Serialización normalizada**: El tablero se refleja para compartir valores de estados simétricos, reduciendo el tamaño de la tabla.
-* **Exploración**: soporte para `ε`-greedy (explotación/exploración) y **softmax** (probabilidad ∝ e^(Q/τ)).  El parámetro `epsilon` decae exponencialmente (`epsilon_decay`) hasta `epsilon_min`.
-* **Entrenamiento**: se realiza vía *self-play* (`train_self_play.py`) o contra heurísticas (`train_q.py`).  Se pueden alcanzar millones de episodios en minutos.
-* **Persistencia**: la Q-table se guarda/carga en `assets/q_table_*.pkl`.
+- `α`: tasa de aprendizaje
+- `γ`: factor de descuento
+- `r`: recompensa
 
-Teóricamente, Q-Learning converge a la política óptima si cada par `(s,a)` se visita infinitas veces y `α` satisface la condición de Robbins-Monro (∑α=∞, ∑α²<∞).
+Características específicas:
 
+-**Simetría horizontal**: se reutiliza el conocimiento entre estados reflejados.
+
+-**Estrategias de exploración**: ε-greedy y softmax controlan el balance entre explorar y explotar.
+
+-**Entrenamiento flexible**: contra sí mismo o contra agentes heurísticos.
+
+-**Persistencia**: la tabla Q se guarda y carga desde disco.
+
+>Q-Learning converge teóricamente a la política óptima bajo condiciones ideales de exploración.
+
+## Estructura del Proyecto
+```
+.
+├── src/
+│   └── agents/               # Implementaciones de agentes (Minimax, Q-Learning, etc.)
+├───trainings/                # Algoritmos de entrenamiento de agentes
+├── play_interface.py         # Ejecutar con interfaz
+├── play.py                   # Ejecutar por consola
+├── Game.py                   # Estructura del juego
+└── assets/                   # Q-tables y demas material complementario
+    └── 2025_TDJ_Presentation.pdf # Diapositivas para la exposición
+```
+
+## Cómo Ejecutar
+```bash
+# Requiere Python 3.x
+pip install -r requirements.txt
+
+# Ejecutar GUI con dos agentes (configurables en play.py)
+python play_interface.py
+```
+
+
+## Resultados y Presentación
+En el archivo [diapositivas de exposición](./2025_TDJ_Presentation.pdf) se encuentran las visualizaciones clave de cada enfoque:
+
+- Comparación entre Q-Learning y Minimax
+
+- Curvas de aprendizaje
+
+- Evaluación de rendimiento por profundidad
+
+- Limitaciones y desafíos
