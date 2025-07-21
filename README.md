@@ -8,12 +8,8 @@ Este repositorio implementa el clásico juego **Connect-4** (4-en-línea) junto 
 
 ## Tabla de Contenidos
 1. [Contexto Académico](#contexto-académico)
-3. [Ejemplos de Uso](#ejemplos-de-uso)
-4. [Entrenamiento de Agentes](#entrenamiento-de-agentes)
-5. [Estructura del Proyecto](#estructura-del-proyecto)
-6. [Algoritmos Implementados](#algoritmos-implementados)
-7. [Cómo Contribuir](#cómo-contribuir)
-8. [Créditos](#créditos)
+2. [Fundamentos Teóricos](#fundamentos-teóricos)
+3. [Estructura del Proyecto](#estructura-del-proyecto)
 
 ---
 
